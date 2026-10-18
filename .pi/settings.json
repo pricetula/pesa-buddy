@@ -1,0 +1,9 @@
+{
+  "resourcePaths": [
+    "AGENT.md",
+    ".pi/APPEND_SYSTEM.md",
+    ".pi/skills/kotlin-android/SKILL.md"
+  ],
+  "enableSkillCommands": true,
+  "projectSkillsDir": ".pi/skills"
+}
