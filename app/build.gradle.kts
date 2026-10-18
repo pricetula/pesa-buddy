@@ -52,4 +52,17 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    // Room (local DB with SQLCipher)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    annotationProcessor(libs.androidx.room.compiler)
+    // SQLCipher AES-256 encryption
+    implementation(libs.sqlcipher)
+    // AndroidX Security Crypto (Keystore)
+    implementation(libs.security.crypto)
+    // WorkManager (background sync / reconciliation)
+    implementation(libs.work.manager)
+    // Supabase Kotlin SDK (paid tier sync)
+    implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.compose.auth)
 }
