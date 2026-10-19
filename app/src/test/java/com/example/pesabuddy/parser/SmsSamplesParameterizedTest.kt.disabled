@@ -1,0 +1,68 @@
+package com.example.pesabuddy.parser
+
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvFileSource
+
+class SmsSamplesParameterizedTest {
+
+    @ParameterizedTest(name = "{10}")
+    @CsvFileSource(resources = ["sms_samples.csv"], numLinesToSkip = 1)
+    fun `parser matches sample from CSV`(
+        senderRaw: String,
+        body: String,
+        isExpectedParseStr: String,
+        expectedCode: String,
+        expectedAmountStr: String,
+        expectedCurrency: String,
+        expectedType: String,
+        expectedFeeStr: String,
+        expectedBalanceStr: String,
+        notes: String
+    ) {
+        val isExpectedParse = isExpectedParseStr.equals("true", ignoreCase = true)
+        val sender = senderRaw.uppercase().replace(Regex("[^A-Z0-9]"), "")
+        val parser: SmsParser? = ParserFactory.create(sender)
+
+        if (parser == null) {
+            assertFalse(isExpectedParse, "Parser should be null for unknown sender")
+            return
+        }
+
+        val tx = parser.parse(sender, body, System.currentTimeMillis())
+
+        if (!isExpectedParse) {
+            assertNull(tx, "Expected null for unparsed sample: $notes")
+            return
+        }
+
+        assertNotNull(tx, "Expected parsed transaction but got null: $notes")
+        val transaction = tx!!
+
+        if (expectedCode.isNotBlank()) {
+            assertEquals(expectedCode, transaction.transactionCode)
+        }
+        if (expectedAmountStr.isNotBlank()) {
+            assertEquals(expectedAmountStr.toDouble(), transaction.amount, 0.01)
+        }
+        if (expectedCurrency.isNotBlank()) {
+            // Normalize KSh -> KES for comparison
+            val normalizedExpected = normalizeCurrency(expectedCurrency)
+            val normalizedActual = normalizeCurrency(transaction.currency)
+            assertEquals(normalizedExpected, normalizedActual)
+        }
+        if (expectedType.isNotBlank()) {
+            assertEquals(expectedType, transaction.type)
+        }
+        if (expectedFeeStr.isNotBlank()) {
+            assertEquals(expectedFeeStr.toDouble(), transaction.transactionFee ?: -1.0, 0.01)
+        }
+        if (expectedBalanceStr.isNotBlank()) {
+            assertEquals(expectedBalanceStr.toDouble(), transaction.accountBalance ?: -1.0, 0.01)
+        }
+    }
+
+    private fun normalizeCurrency(cur: String): String {
+        return cur.uppercase().let { if (it == "KSH") "KES" else it }
+    }
+}
